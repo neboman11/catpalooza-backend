@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"math/rand"
 	"net/http"
 	"time"
 
@@ -18,7 +19,8 @@ const databasePassword = "catpalooza"
 const databaseHost = "www.nesbitt.rocks"
 const databaseName = "catpalooza"
 const databaseTable = "photos"
-const sqlQuery = "SELECT * FROM " + databaseTable + " ORDER BY RAND() LIMIT 1;"
+const photoSQLQuery = "SELECT * FROM " + databaseTable + " WHERE id = "
+const rowCountSQLQuery = `SELECT * FROM counts WHERE cat_table = "photos";`
 
 var db *sql.DB // Database connection pool.
 
@@ -81,8 +83,18 @@ func getRandomPicture(w http.ResponseWriter, r *http.Request) {
 
 func queryPhoto(ctx context.Context) (databaseRow, error) {
 	var photo databaseRow
-	response := db.QueryRowContext(ctx, sqlQuery)
-	err := response.Scan(&photo.ID, &photo.Name, &photo.Photo, &photo.Size)
+	var rowCount int
+	var tableName string
+	response := db.QueryRowContext(ctx, rowCountSQLQuery)
+	err := response.Scan(&tableName, &rowCount)
+	if err != nil {
+		return photo, err
+	}
+
+	randomRow := rand.Int() % rowCount
+
+	response = db.QueryRowContext(ctx, photoSQLQuery+fmt.Sprintf("%d;", randomRow))
+	err = response.Scan(&photo.ID, &photo.Name, &photo.Photo, &photo.Size)
 	if err != nil {
 		return photo, err
 	}
