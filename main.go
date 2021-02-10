@@ -75,6 +75,7 @@ func getRandomPicture(w http.ResponseWriter, r *http.Request) {
 	}
 
 	body, err := json.Marshal(photo)
+	w.Header().Add("Access-Control-Allow-Origin", "*")
 	fmt.Fprintf(w, "%s", body)
 }
 
