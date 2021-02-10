@@ -23,10 +23,10 @@ const sqlQuery = "SELECT * FROM " + databaseTable + " ORDER BY RAND() LIMIT 1;"
 var db *sql.DB // Database connection pool.
 
 type databaseRow struct {
-	ID    int
-	Name  string
-	Photo []byte
-	Size  uint32
+	ID    int    `json:"id"`
+	Name  string `json:"name"`
+	Photo []byte `json:"photo"`
+	Size  uint32 `json:"size"`
 }
 
 func main() {
