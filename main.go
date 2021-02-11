@@ -21,6 +21,7 @@ const databaseName = "catpalooza"
 const databaseTable = "photos"
 const photoSQLQuery = "SELECT * FROM " + databaseTable + " WHERE id = "
 const rowCountSQLQuery = `SELECT COUNT(id) FROM photos;`
+const connectionTimeoutLength = 3 // minutes
 
 var db *sql.DB // Database connection pool.
 
@@ -53,7 +54,7 @@ func setupDatabaseConnection() {
 		return
 	}
 	// See "Important settings" section.
-	db.SetConnMaxLifetime(time.Minute * 1)
+	db.SetConnMaxLifetime(time.Minute * connectionTimeoutLength)
 	db.SetMaxOpenConns(20)
 	db.SetMaxIdleConns(20)
 }
