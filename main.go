@@ -20,7 +20,7 @@ const databaseHost = "www.nesbitt.rocks"
 const databaseName = "catpalooza"
 const databaseTable = "photos"
 const photoSQLQuery = "SELECT * FROM " + databaseTable + " WHERE id = "
-const rowCountSQLQuery = `SELECT * FROM counts WHERE cat_table = "photos";`
+const rowCountSQLQuery = `SELECT COUNT(id) FROM photos;`
 
 var db *sql.DB // Database connection pool.
 
@@ -84,9 +84,8 @@ func getRandomPicture(w http.ResponseWriter, r *http.Request) {
 func queryPhoto(ctx context.Context) (databaseRow, error) {
 	var photo databaseRow
 	var rowCount int
-	var tableName string
 	response := db.QueryRowContext(ctx, rowCountSQLQuery)
-	err := response.Scan(&tableName, &rowCount)
+	err := response.Scan(&rowCount)
 	if err != nil {
 		return photo, err
 	}
