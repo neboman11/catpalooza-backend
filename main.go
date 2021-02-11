@@ -32,7 +32,30 @@ type databaseRow struct {
 }
 
 func main() {
+	setupDatabaseConnection()
 	handleRequests()
+}
+
+func setupDatabaseConnection() {
+	config := mysql.Config{
+		User:                 databaseUser,
+		Passwd:               databasePassword,
+		Net:                  "tcp",
+		Addr:                 databaseHost,
+		DBName:               databaseName,
+		AllowNativePasswords: true,
+	}
+	configString := config.FormatDSN()
+	var err error
+	db, err = sql.Open("mysql", configString)
+	if err != nil {
+		fmt.Printf("Failed to connect to database: %s", err)
+		return
+	}
+	// See "Important settings" section.
+	db.SetConnMaxLifetime(time.Minute * 1)
+	db.SetMaxOpenConns(20)
+	db.SetMaxIdleConns(20)
 }
 
 func handleRequests() {
@@ -50,26 +73,6 @@ func homePage(w http.ResponseWriter, r *http.Request) {
 }
 
 func getRandomPicture(w http.ResponseWriter, r *http.Request) {
-	config := mysql.Config{
-		User:                 databaseUser,
-		Passwd:               databasePassword,
-		Net:                  "tcp",
-		Addr:                 databaseHost,
-		DBName:               databaseName,
-		AllowNativePasswords: true,
-	}
-	configString := config.FormatDSN()
-	var err error
-	db, err = sql.Open("mysql", configString)
-	if err != nil {
-		fmt.Fprintf(w, "Failed to connect to database: %s", err)
-		return
-	}
-	// See "Important settings" section.
-	db.SetConnMaxLifetime(time.Minute * 3)
-	db.SetMaxOpenConns(10)
-	db.SetMaxIdleConns(10)
-
 	photo, err := queryPhoto(r.Context())
 	if err != nil {
 		fmt.Fprintf(w, "Failed to query database: %s", err)
