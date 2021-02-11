@@ -17,15 +17,15 @@ def insertBLOB(photo, table):
                                              password='catpalooza')
 
         cursor = connection.cursor()
-        sql_insert_blob_query = "INSERT INTO %s (name, photo, size) VALUES (%s, %s, %s)"
+        sql_insert_blob_query = "INSERT INTO {} (name, photo, size) VALUES (%s, %s, %s)".format(table)
 
         catPic = convertToBinaryData(photo)
 
         # Convert data into tuple format
-        insert_blob_tuple = (table, os.path.basename(photo), catPic, os.path.getsize(photo))
+        insert_blob_tuple = (os.path.basename(photo), catPic, os.path.getsize(photo))
         result = cursor.execute(sql_insert_blob_query, insert_blob_tuple)
         connection.commit()
-        print("Image successfully entered into the database", result)
+        print("Image successfully entered into table {}".format(table))
 
     except Error as error:
         print("Failed inserting BLOB into MySQL table {}".format(error))
@@ -37,17 +37,14 @@ def insertBLOB(photo, table):
             print("MySQL connection is closed")
 
 def uploadDirectoryToDatabase(directory, table):
-    for file in os.listdir('reddit_sub_cat'):
-        if os.path.isdir(file):
-            uploadDirectoryToDatabase(os.path.join(directory, file))
+    for file in os.listdir(directory):
+        if os.path.isdir(os.path.join(directory, file)):
+            uploadDirectoryToDatabase(os.path.join(directory, file), table)
         elif file.endswith('.jpg') or file.endswith('.jpeg') or file.endswith('.png') or file.endswith('.webp'):
             insertBLOB(os.path.join(directory, file), table)
 
-# if __name__ == '__main__':
-#     parser = argparse.ArgumentParser()
-#     parser.add_argument('--dir', type=str, help='The directory containing images to upload.')
-#     args = parser.parse_args()
-#     uploadDirectoryToDatabase(args.dir, 'photos')
-
-#     # TODO: Remove
-#     uploadDirectoryToDatabase(os.path.join(args.dir, 'angry cat'), 'angry_ct')
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--dir', type=str, default='.', help='The directory containing images to upload.')
+    args = parser.parse_args()
+    uploadDirectoryToDatabase(str(args.dir), 'photos')
