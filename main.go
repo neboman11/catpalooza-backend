@@ -65,6 +65,7 @@ func handleRequests() {
 	// GETs
 	myRouter.HandleFunc("/", homePage)
 	myRouter.HandleFunc("/random", getRandomPicture)
+	myRouter.HandleFunc("/score", scorePhoto)
 
 	log.Fatal(http.ListenAndServe(":10000", myRouter))
 }
@@ -102,4 +103,35 @@ func queryPhoto(ctx context.Context) (databaseRow, error) {
 		return photo, err
 	}
 	return photo, nil
+}
+
+func scorePhoto(w http.ResponseWriter, r *http.Request) {
+	keys := r.URL.Query()
+
+	if len(keys) != 2 {
+		fmt.Fprintf(w, "Invalid number of url parameters!")
+		return
+	}
+
+	id, ok := keys["id"]
+	if !ok {
+		fmt.Fprintf(w, "Missing 'id' parameter")
+		return
+	}
+
+	score, ok := keys["score"]
+	if !ok {
+		fmt.Fprintf(w, "Missing 'score' parameter")
+		return
+	}
+
+	UpdateSQLQuery := "UPDATE " + databaseTable + " SET score = " + score[0] + " WHERE id = " + id[0] + ";"
+
+	response := db.QueryRowContext(r.Context(), UpdateSQLQuery)
+	err := response.Scan()
+	if err != nil {
+		fmt.Fprintf(w, "Failed to update database: %s", err)
+	}
+
+	return
 }
