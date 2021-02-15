@@ -30,6 +30,7 @@ type databaseRow struct {
 	Name  string `json:"name"`
 	Photo []byte `json:"photo"`
 	Size  uint32 `json:"size"`
+	Score int    `json:"score"`
 }
 
 func main() {
@@ -98,7 +99,7 @@ func queryPhoto(ctx context.Context) (databaseRow, error) {
 	randomRow := rand.Int() % rowCount
 
 	response = db.QueryRowContext(ctx, photoSQLQuery+fmt.Sprintf("%d;", randomRow))
-	err = response.Scan(&photo.ID, &photo.Name, &photo.Photo, &photo.Size)
+	err = response.Scan(&photo.ID, &photo.Name, &photo.Photo, &photo.Size, &photo.Score)
 	if err != nil {
 		return photo, err
 	}
